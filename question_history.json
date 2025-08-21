@@ -32,5 +32,11 @@
   "Explain the purpose of the `isNaN()` function and the global `NaN` property in JavaScript. What are some common scenarios where `NaN` might appear?",
   "Describe \"short-circuiting\" with logical operators (`&&`, `||`) in JavaScript. Provide a simple example for each.",
   "Explain the concept of `async` and `await` in JavaScript. How do they simplify asynchronous code compared to using Promises directly or traditional callbacks?",
-  "Describe the difference between `Array.prototype.slice()` and `Array.prototype.splice()` methods in JavaScript. Provide use cases for each."
+  "Describe the difference between `Array.prototype.slice()` and `Array.prototype.splice()` methods in JavaScript. Provide use cases for each.",
+  "Explain the purpose of the `Array.prototype.reduce()` method in JavaScript. How does it work, and what are its main parameters?",
+  "Describe the purpose and usage of `Object.keys()`, `Object.values()`, and `Object.entries()` methods in JavaScript.",
+  "Explain the differences between `String.prototype.indexOf()` and `String.prototype.includes()` methods. When would you use one over the other?",
+  "In Node.js, what is the purpose of the `fs` (File System) module? Give a simple example of reading a file asynchronously.",
+  "Explain the difference between `call()`, `apply()`, and `bind()` methods in JavaScript. How do they affect the `this` context of a function?",
+  "Describe how the `new` keyword works in JavaScript when used with a constructor function. What does it return, and what happens behind the scenes?"
 ]
