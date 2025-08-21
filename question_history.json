@@ -16,5 +16,15 @@
   "How do you add, modify, and delete properties from a JavaScript object? Provide examples for each operation.",
   "What is a callback function in JavaScript? Provide a simple example demonstrating its use with `setTimeout`.",
   "Explain the concept of the prototype chain in JavaScript. How does JavaScript achieve inheritance through this mechanism?",
-  "What is a closure in JavaScript? Provide an example demonstrating how a closure can retain access to an outer function's scope."
+  "What is a closure in JavaScript? Provide an example demonstrating how a closure can retain access to an outer function's scope.",
+  "Explain what destructuring assignment is in JavaScript and provide examples for both array and object destructuring.",
+  "What are Template Literals in JavaScript, and what advantages do they offer over traditional string concatenation?",
+  "Explain the difference between the `null` and `undefined` data types in JavaScript. When might you encounter each?",
+  "Describe the purpose of the spread (`...`) syntax and the rest (`...`) parameters in JavaScript. Provide an example for each.",
+  "Explain the purpose of the `Array.prototype.filter()` method. How does it differ from `Array.prototype.map()` and `Array.prototype.forEach()`?",
+  "Discuss the differences between CommonJS modules (used primarily in Node.js) and ES Modules (ESM, used in modern browsers and increasingly in Node.js). Focus on their syntax and how they handle imports/exports.",
+  "What is \"Strict Mode\" in JavaScript, and why would you use `'use strict'`? List at least three specific changes or restrictions it introduces.",
+  "Explain the concept of Promises in JavaScript. How do they help manage asynchronous operations more effectively than traditional callbacks, and what are their three possible states?",
+  "Explain the difference between `Promise.all()` and `Promise.race()`. When would you use one over the other?",
+  "In Node.js, what is the `process` object, and what are some of its key properties or methods that developers commonly interact with?"
 ]
