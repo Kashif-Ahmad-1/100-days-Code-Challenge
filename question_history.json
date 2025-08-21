@@ -38,5 +38,12 @@
   "Explain the differences between `String.prototype.indexOf()` and `String.prototype.includes()` methods. When would you use one over the other?",
   "In Node.js, what is the purpose of the `fs` (File System) module? Give a simple example of reading a file asynchronously.",
   "Explain the difference between `call()`, `apply()`, and `bind()` methods in JavaScript. How do they affect the `this` context of a function?",
-  "Describe how the `new` keyword works in JavaScript when used with a constructor function. What does it return, and what happens behind the scenes?"
+  "Describe how the `new` keyword works in JavaScript when used with a constructor function. What does it return, and what happens behind the scenes?",
+  "In JavaScript, how do you explicitly convert a string to a number, and vice versa? Provide at least two methods for each direction.",
+  "Explain the primary purpose of `console.log()` and `console.dir()` in JavaScript debugging. When would you choose to use `console.dir()` over `console.log()`?",
+  "The `typeof` operator is commonly used to check the data type of a variable. Explain what `typeof null` returns in JavaScript and why this is considered a \"quirk\" or a \"bug.\"",
+  "In JavaScript, what is the most reliable way to determine if a given variable is an array? Why is this method preferred over others like `typeof` or `instanceof`?",
+  "Explain the concept of \"method chaining\" in JavaScript. How is it implemented, and what are its primary benefits? Provide a simple code example.",
+  "What are getters and setters in JavaScript objects, and why would you use them? Provide an example.",
+  "In Node.js, when using CommonJS modules, what is the fundamental difference between `module.exports` and `exports`? Explain when you should use one over the other."
 ]
