@@ -287,7 +287,7 @@ function Content({ selectedDay }) {
 }
 
 export default Content;`;
-    fs.writeFileSync(path.join(SRC_DIR, 'Content.jsx'), contentJsx);
+    fs.writeFileSync(path.join(SRC_DIR, 'Content.jsx'), contentJsx); 
 
     // Write webserver.js
     const webserverJs = `const express = require('express');
