@@ -45,5 +45,15 @@
   "In JavaScript, what is the most reliable way to determine if a given variable is an array? Why is this method preferred over others like `typeof` or `instanceof`?",
   "Explain the concept of \"method chaining\" in JavaScript. How is it implemented, and what are its primary benefits? Provide a simple code example.",
   "What are getters and setters in JavaScript objects, and why would you use them? Provide an example.",
-  "In Node.js, when using CommonJS modules, what is the fundamental difference between `module.exports` and `exports`? Explain when you should use one over the other."
+  "In Node.js, when using CommonJS modules, what is the fundamental difference between `module.exports` and `exports`? Explain when you should use one over the other.",
+  "Explain the purpose of `JSON.stringify()` and `JSON.parse()` in JavaScript. When would you use each?",
+  "What is the purpose of the `package.json` file in a Node.js project? Name a few key fields you would typically find in it.",
+  "Describe the difference between a primitive value and an object in JavaScript, focusing on how they are handled in terms of mutability and assignment.",
+  "Explain the difference between `console.log()` and `console.error()` in Node.js (or browser). When would you choose to use `console.error()`?",
+  "What are `Set` and `Map` in JavaScript? Describe a practical use case for each.",
+  "Explain the difference between synchronous and asynchronous operations in JavaScript. Provide an example of each.",
+  "In Node.js, what are `__dirname` and `__filename`? When are they useful?",
+  "Explain the concept of recursion in JavaScript. Provide a simple example of a recursive function. What are the potential drawbacks?",
+  "Describe what an Event Emitter is in Node.js. How does it facilitate an event-driven architecture? Provide a simple code example.",
+  "Explain the purpose and usage of the `Object.freeze()` and `Object.seal()` methods in JavaScript. How do they differ?"
 ]
