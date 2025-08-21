@@ -25,13 +25,19 @@ function loadHistory() {
 }
 
 /**
- * Saves the new questions to the history file.
- * @param {string[]} history - The existing history.
- * @param {string} newQuestions - The new block of questions to add.
+ * Extracts main questions from the interview content and saves them to the history file.
+ * @param {string[]} history - The existing history (array of question strings).
+ * @param {string} newInterviewContent - The new block of interview content in Markdown.
  */
-function saveHistory(history, newQuestions) {
-    history.push(newQuestions);
-    fs.writeFileSync(HISTORY_FILE, JSON.stringify(history, null, 2));
+function saveHistory(history, newInterviewContent) {
+    const questionRegex = /\*\*Main Question\*\*:\s*(.*)/g;
+    const matches = [...newInterviewContent.matchAll(questionRegex)];
+    const newQuestions = matches.map(match => match[1].trim());
+
+    // Combine old history with the newly extracted questions
+    const updatedHistory = history.concat(newQuestions);
+
+    fs.writeFileSync(HISTORY_FILE, JSON.stringify(updatedHistory, null, 2));
 }
 
 /**
@@ -41,11 +47,11 @@ function saveHistory(history, newQuestions) {
  * @returns {string} The complete prompt.
  */
 function getPrompt(day, history) {
-    const historyText = history.join('\n\n---\n\n');
+    const historyText = history.join('\n'); // Join questions with a newline
     return `
     Act as a senior interviewer conducting a JavaScript and Node.js technical interview for a '100 Days of Code' challenge. Today is Day ${day}.
 
-    Your task is to generate 20 fresh and unique interview questions. Do NOT repeat any questions from the following list of previously asked questions:
+    Your task is to generate 10 fresh and unique interview questions. Do NOT repeat any questions from the following list of previously asked questions:
     --- PREVIOUSLY ASKED ---
     ${historyText}
     --- END OF PREVIOUSLY ASKED ---
@@ -55,11 +61,11 @@ function getPrompt(day, history) {
     Structure the entire output in Markdown format.
 
     The difficulty must progress as follows:
-    - Questions 1-7: Basic
-    - Questions 8-14: Intermediate
-    - Questions 15-20: Hard/Advanced
+    - Questions 1-4: Basic
+    - Questions 5-7: Intermediate
+    - Questions 8-10: Hard/Advanced
 
-    For EACH of the 20 questions, you MUST provide the following in this exact order:
+    For EACH of the 10 questions, you MUST provide the following in this exact order:
     1.  **Main Question**: The primary theory or coding question.
     2.  **Answer**: A clear, simple, step-by-step explanation.
     3.  **Follow-up Questions**: 2-3 relevant cross-questions.
