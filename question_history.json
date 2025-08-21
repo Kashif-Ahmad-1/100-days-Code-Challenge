@@ -67,5 +67,9 @@
   "Explain the purpose of the `super` keyword in ES6 classes. When and why would you use it in a class constructor and in other methods?",
   "What is a \"pure function\" in JavaScript, and what are its main characteristics? Why are pure functions considered beneficial in programming?",
   "Explain the concept of \"event delegation\" in JavaScript. Why is it beneficial, especially when dealing with a large number of dynamic elements?",
-  "Describe what Node.js Streams are. What are the different types of streams, and why are they important for I/O operations in Node.js?"
+  "Describe what Node.js Streams are. What are the different types of streams, and why are they important for I/O operations in Node.js?",
+  "Explain the difference between the `in` operator and the `Object.prototype.hasOwnProperty()` method in JavaScript. When would you typically use one over the other?",
+  "What is the purpose of the `debugger` keyword in JavaScript, and how does it assist in debugging your code?",
+  "Explain the difference between `let` and `const` in JavaScript, specifically focusing on how they handle reassignment versus the mutability of the *value* they hold.",
+  "Explain what the `typeof` operator returns for functions and arrays in JavaScript. Are these results always intuitive, particularly for arrays?"
 ]
