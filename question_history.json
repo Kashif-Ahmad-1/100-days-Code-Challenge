@@ -61,5 +61,11 @@
   "In Node.js, what is the main difference between `process.nextTick()` and `setImmediate()`? When would you typically use one over the other?",
   "Describe what a \"middleware\" function is in the context of a Node.js web framework like Express.js. How does it typically receive control and pass it on?",
   "Explain the concept of JavaScript Generators. How do they differ from regular functions, and what is the `yield` keyword used for?",
-  "What are Node.js `Buffer`s, and why are they necessary? Provide a simple example of creating a `Buffer` from a string."
+  "What are Node.js `Buffer`s, and why are they necessary? Provide a simple example of creating a `Buffer` from a string.",
+  "What are optional chaining (`?.`) and nullish coalescing (`??`) operators in JavaScript? Provide a scenario where each would be particularly useful.",
+  "How do you add event listeners to DOM elements in JavaScript? Provide an example of adding a click event listener to a button.",
+  "Explain the purpose of the `super` keyword in ES6 classes. When and why would you use it in a class constructor and in other methods?",
+  "What is a \"pure function\" in JavaScript, and what are its main characteristics? Why are pure functions considered beneficial in programming?",
+  "Explain the concept of \"event delegation\" in JavaScript. Why is it beneficial, especially when dealing with a large number of dynamic elements?",
+  "Describe what Node.js Streams are. What are the different types of streams, and why are they important for I/O operations in Node.js?"
 ]
