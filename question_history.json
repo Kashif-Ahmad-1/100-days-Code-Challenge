@@ -26,5 +26,11 @@
   "What is \"Strict Mode\" in JavaScript, and why would you use `'use strict'`? List at least three specific changes or restrictions it introduces.",
   "Explain the concept of Promises in JavaScript. How do they help manage asynchronous operations more effectively than traditional callbacks, and what are their three possible states?",
   "Explain the difference between `Promise.all()` and `Promise.race()`. When would you use one over the other?",
-  "In Node.js, what is the `process` object, and what are some of its key properties or methods that developers commonly interact with?"
+  "In Node.js, what is the `process` object, and what are some of its key properties or methods that developers commonly interact with?",
+  "Explain the difference between passing arguments by value and by reference in JavaScript functions.",
+  "How do you check the data type of a variable in JavaScript? Discuss `typeof` and its known limitations.",
+  "Explain the purpose of the `isNaN()` function and the global `NaN` property in JavaScript. What are some common scenarios where `NaN` might appear?",
+  "Describe \"short-circuiting\" with logical operators (`&&`, `||`) in JavaScript. Provide a simple example for each.",
+  "Explain the concept of `async` and `await` in JavaScript. How do they simplify asynchronous code compared to using Promises directly or traditional callbacks?",
+  "Describe the difference between `Array.prototype.slice()` and `Array.prototype.splice()` methods in JavaScript. Provide use cases for each."
 ]
