@@ -5,6 +5,11 @@ const { execSync } = require('child_process');
 
 // --- Configuration ---
 const HISTORY_FILE = path.join(__dirname, 'question_history.json');
+const WEBSITE_DIR = path.join(__dirname, 'website');
+const PUBLIC_INTERVIEWS_DIR = path.join(WEBSITE_DIR, 'public', 'interviews');
+const SRC_DIR = path.join(WEBSITE_DIR, 'src');
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 5000; // 5 seconds
 
 // --- Helper Functions ---
 
@@ -15,7 +20,6 @@ const HISTORY_FILE = path.join(__dirname, 'question_history.json');
 function loadHistory() {
     if (fs.existsSync(HISTORY_FILE)) {
         const rawData = fs.readFileSync(HISTORY_FILE, 'utf-8');
-        // If the file is empty, return an empty array to avoid a JSON parsing error.
         if (rawData.trim() === '') {
             return [];
         }
@@ -33,10 +37,7 @@ function saveHistory(history, newInterviewContent) {
     const questionRegex = /\*\*Main Question\*\*:\s*(.*)/g;
     const matches = [...newInterviewContent.matchAll(questionRegex)];
     const newQuestions = matches.map(match => match[1].trim());
-
-    // Combine old history with the newly extracted questions
     const updatedHistory = history.concat(newQuestions);
-
     fs.writeFileSync(HISTORY_FILE, JSON.stringify(updatedHistory, null, 2));
 }
 
@@ -47,7 +48,7 @@ function saveHistory(history, newInterviewContent) {
  * @returns {string} The complete prompt.
  */
 function getPrompt(day, history) {
-    const historyText = history.join('\n'); // Join questions with a newline
+    const historyText = history.join('\n');
     return `
     Act as a senior interviewer conducting a JavaScript and Node.js technical interview for a '100 Days of Code' challenge. Today is Day ${day}.
 
@@ -77,9 +78,9 @@ function getPrompt(day, history) {
 }
 
 /**
- * Calls the Gemini API to get the interview questions.
+ * Calls the Gemini API to get the interview questions with retry logic.
  * @param {string} prompt - The prompt to send to the model.
- * @returns {Promise<string>} The generated text from the model.
+ * @returns {Promise<string>} The generated text from the model or fallback content.
  */
 async function getInterviewQuestions(prompt) {
     const apiKey = process.env.GEMINI_API_KEY;
@@ -98,34 +99,210 @@ async function getInterviewQuestions(prompt) {
         }
     };
 
-    console.log("Calling Gemini API... This may take a moment.");
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+        console.log(`Calling Gemini API (Attempt ${attempt}/${MAX_RETRIES})...`);
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
 
-    try {
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
+            if (!response.ok) {
+                if (response.status === 503 && attempt < MAX_RETRIES) {
+                    console.log(`503 error detected. Retrying in ${RETRY_DELAY / 1000} seconds...`);
+                    await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+                    continue;
+                }
+                throw new Error(`API call failed with status: ${response.status}`);
+            }
 
-        if (!response.ok) {
-            throw new Error(`API call failed with status: ${response.status}`);
+            const result = await response.json();
+            if (result.candidates && result.candidates[0].content && result.candidates[0].content.parts) {
+                return result.candidates[0].content.parts[0].text;
+            } else {
+                console.error("Unexpected API response structure:", JSON.stringify(result, null, 2));
+                throw new Error("Failed to get content from API response.");
+            }
+        } catch (error) {
+            if (attempt === MAX_RETRIES) {
+                console.error("Max retries reached. Using fallback content.");
+                return `# Fallback Content for Day ${day}\n\nAPI call failed after ${MAX_RETRIES} attempts. Please try again later or check your API key and network connection.`;
+            }
         }
-
-        const result = await response.json();
-        if (result.candidates && result.candidates.length > 0 &&
-            result.candidates[0].content && result.candidates[0].content.parts &&
-            result.candidates[0].content.parts.length > 0) {
-            return result.candidates[0].content.parts[0].text;
-        } else {
-            console.error("Unexpected API response structure:", JSON.stringify(result, null, 2));
-            throw new Error("Failed to get content from API response.");
-        }
-    } catch (error) {
-        console.error("Error calling Gemini API:", error);
-        throw error;
     }
 }
 
+/**
+ * Creates the website folder structure and files.
+ */
+function createWebsiteFiles(day, interviewContent) {
+    // Create website directories
+    fs.mkdirSync(WEBSITE_DIR, { recursive: true });
+    fs.mkdirSync(SRC_DIR, { recursive: true });
+    fs.mkdirSync(PUBLIC_INTERVIEWS_DIR, { recursive: true });
+
+    // Copy interview.md to public/interviews/Day-XX/
+    const dayDir = `Day-${String(day).padStart(2, '0')}`;
+    const publicDayDir = path.join(PUBLIC_INTERVIEWS_DIR, dayDir);
+    fs.mkdirSync(publicDayDir, { recursive: true });
+    fs.writeFileSync(path.join(publicDayDir, 'interview.md'), interviewContent);
+
+    // Write index.html
+    const indexHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>100 Days of Code Interview Questions</title>
+  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-markdown@8.0.7/lib/react-markdown.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.18.9/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel" src="src/index.jsx"></script>
+</body>
+</html>`;
+    fs.writeFileSync(path.join(WEBSITE_DIR, 'index.html'), indexHtml);
+
+    // Write src/index.jsx
+    const indexJsx = `import React from 'react';
+import ReactDOM from 'react-dom';
+import App from './App.jsx';
+
+ReactDOM.render(<App />, document.getElementById('root'));`;
+    fs.writeFileSync(path.join(SRC_DIR, 'index.jsx'), indexJsx);
+
+    // Write src/App.jsx
+    const appJsx = `import React, { useState } from 'react';
+import Sidebar from './Sidebar.jsx';
+import Content from './Content.jsx';
+
+function App() {
+  const [selectedDay, setSelectedDay] = useState(null);
+
+  return (
+    <div className="flex h-screen bg-gray-100">
+      <Sidebar selectedDay={selectedDay} setSelectedDay={setSelectedDay} />
+      <Content selectedDay={selectedDay} />
+    </div>
+  );
+}
+
+export default App;`;
+    fs.writeFileSync(path.join(SRC_DIR, 'App.jsx'), appJsx);
+
+    // Write src/Sidebar.jsx
+    const sidebarJsx = `import React from 'react';
+
+function Sidebar({ selectedDay, setSelectedDay }) {
+  const totalDays = 100;
+  const days = Array.from({ length: totalDays }, (_, i) => i + 1);
+
+  return (
+    <div className="w-64 bg-blue-800 text-white p-4 overflow-y-auto">
+      <h1 className="text-2xl font-bold mb-4">100 Days of Code</h1>
+      <ul>
+        {days.map(day => (
+          <li key={day} className="mb-2">
+            <button
+              onClick={() => setSelectedDay(day)}
+              className={\`w-full text-left p-2 rounded hover:bg-blue-700 transition-colors \${
+                selectedDay === day ? 'bg-blue-900' : ''
+              }\`}
+            >
+              Day {day.toString().padStart(2, '0')}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default Sidebar;`;
+    fs.writeFileSync(path.join(SRC_DIR, 'Sidebar.jsx'), sidebarJsx);
+
+    // Write src/Content.jsx
+    const contentJsx = `import React, { useState, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
+
+function Content({ selectedDay }) {
+  const [content, setContent] = useState('');
+
+  useEffect(() => {
+    if (selectedDay) {
+      fetch(\`/interviews/Day-\${selectedDay.toString().padStart(2, '0')}/interview.md\`)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('File not found');
+          }
+          return response.text();
+        })
+        .then(text => setContent(text))
+        .catch(error => {
+          console.error('Error fetching content:', error);
+          setContent('# Content not found');
+        });
+    } else {
+      setContent('# Select a Day');
+    }
+  }, [selectedDay]);
+
+  return (
+    <div className="flex-1 p-8 overflow-y-auto">
+      <h2 className="text-3xl font-bold mb-4 text-blue-800">
+        {selectedDay ? \`Day \${selectedDay.toString().padStart(2, '0')}\` : 'Select a Day'}
+      </h2>
+      <div className="bg-white p-6 rounded-lg shadow-lg">
+        <ReactMarkdown
+          className="prose max-w-none"
+          components={{
+            h1: ({ node, ...props }) => <h1 className="text-2xl font-bold mt-6 mb-4 text-blue-800" {...props} />,
+            h2: ({ node, ...props }) => <h2 className="text-xl font-semibold mt-5 mb-3 text-blue-700" {...props} />,
+            p: ({ node, ...props }) => <p className="mb-4 text-gray-700" {...props} />,
+            code: ({ node, inline, className, children, ...props }) => {
+              return !inline ? (
+                <pre className="bg-gray-100 p-4 rounded-lg overflow-x-auto">
+                  <code className={className} {...props}>
+                    {children}
+                  </code>
+                </pre>
+              ) : (
+                <code className="bg-gray-100 px-1 rounded" {...props}>
+                  {children}
+                </code>
+              );
+            },
+          }}
+        >
+          {content}
+        </ReactMarkdown>
+      </div>
+    </div>
+  );
+}
+
+export default Content;`;
+    fs.writeFileSync(path.join(SRC_DIR, 'Content.jsx'), contentJsx);
+
+    // Write webserver.js
+    const webserverJs = `const express = require('express');
+const path = require('path');
+const app = express();
+const port = 3000;
+
+app.use(express.static(path.join(__dirname)));
+app.use('/interviews', express.static(path.join(__dirname, 'public', 'interviews')));
+
+app.listen(port, () => {
+  console.log(\`Website running at http://localhost:\${port}\`);
+});`;
+    fs.writeFileSync(path.join(WEBSITE_DIR, 'webserver.js'), webserverJs);
+}
 
 // --- Main Execution ---
 async function main() {
@@ -142,19 +319,30 @@ async function main() {
 
         const history = loadHistory();
         const prompt = getPrompt(day, history);
-        const interviewContent = await getInterviewQuestions(prompt);
+        let interviewContent;
+        try {
+            interviewContent = await getInterviewQuestions(prompt);
+        } catch (error) {
+            console.error("Failed to fetch interview questions:", error.message);
+            interviewContent = `# Fallback Content for Day ${day}\n\nAPI call failed. Please try again later or check your API key and network connection.`;
+        }
 
-        fs.mkdirSync(dayDir);
+        // Create Day-XX folder and save interview.md
+        fs.mkdirSync(dayDir, { recursive: true });
         fs.writeFileSync(path.join(dayDir, 'interview.md'), interviewContent);
         console.log(`Interview file created at ${dayDir}/interview.md`);
+
+        // Create website files and copy interview.md
+        createWebsiteFiles(day, interviewContent);
+        console.log("Website files generated in 'website' directory.");
 
         saveHistory(history, interviewContent);
         console.log("Updated question history.");
 
         console.log("Pushing to GitHub...");
-        execSync('git add .');
-        execSync(`git commit -m "Day ${day}: Add interview questions"`);
-        execSync('git push');
+        execSync('git add .', { stdio: 'inherit' });
+        execSync(`git commit -m "Day ${day}: Add interview questions and website files"`, { stdio: 'inherit' });
+        execSync('git push', { stdio: 'inherit' });
         console.log(`Successfully pushed Day ${day} to GitHub!`);
 
     } catch (error) {

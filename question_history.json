@@ -55,5 +55,11 @@
   "In Node.js, what are `__dirname` and `__filename`? When are they useful?",
   "Explain the concept of recursion in JavaScript. Provide a simple example of a recursive function. What are the potential drawbacks?",
   "Describe what an Event Emitter is in Node.js. How does it facilitate an event-driven architecture? Provide a simple code example.",
-  "Explain the purpose and usage of the `Object.freeze()` and `Object.seal()` methods in JavaScript. How do they differ?"
+  "Explain the purpose and usage of the `Object.freeze()` and `Object.seal()` methods in JavaScript. How do they differ?",
+  "What is the purpose of the `Symbol` data type in JavaScript? Provide a simple use case where `Symbol` would be beneficial.",
+  "Explain the concept of \"currying\" in JavaScript. Why might you use it, and what are its main benefits?",
+  "In Node.js, what is the main difference between `process.nextTick()` and `setImmediate()`? When would you typically use one over the other?",
+  "Describe what a \"middleware\" function is in the context of a Node.js web framework like Express.js. How does it typically receive control and pass it on?",
+  "Explain the concept of JavaScript Generators. How do they differ from regular functions, and what is the `yield` keyword used for?",
+  "What are Node.js `Buffer`s, and why are they necessary? Provide a simple example of creating a `Buffer` from a string."
 ]
