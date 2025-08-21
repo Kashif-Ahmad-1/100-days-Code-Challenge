@@ -7,7 +7,6 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 const HISTORY_FILE = path.join(__dirname, 'question_history.json');
-const QUESTIONS_DATA_FILE = path.join(__dirname, 'public', 'questions_data.json');
 
 // Helper Functions
 async function loadHistory() {
@@ -71,7 +70,7 @@ async function getInterviewQuestions(day, history) {
     throw new Error("Failed to get content from API response.");
 }
 
-async function parseMarkdown(filePath, day) {
+async function parseMarkdown(filePath) {
     try {
         const content = await fs.readFile(filePath, 'utf-8');
         const questionBlocks = content.split(/(?=### Question \d+)/).filter(block => block.trim().startsWith('### Question'));
@@ -96,7 +95,7 @@ async function parseMarkdown(filePath, day) {
             return { mainQuestion, answer, followUps, followUpAnswers, codeExamples };
         });
     } catch (error) {
-        console.error(`Error parsing Markdown file ${filePath} for Day ${day}:`, error.message);
+        console.error(`Error parsing Markdown file ${filePath}:`, error.message);
         return [];
     }
 }
@@ -105,23 +104,19 @@ function sanitizeHTML(str) {
     return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
-async function saveQuestionsData(day, questions) {
-    let allQuestions = [];
-    if (await fs.access(QUESTIONS_DATA_FILE).then(() => true).catch(() => false)) {
-        const rawData = await fs.readFile(QUESTIONS_DATA_FILE, 'utf-8');
-        allQuestions = rawData.trim() === '' ? [] : JSON.parse(rawData);
-    }
-    const existingDayIndex = allQuestions.findIndex(d => d.day === day);
-    if (existingDayIndex !== -1) {
-        allQuestions[existingDayIndex] = { day, questions };
-    } else {
-        allQuestions.push({ day, questions });
-    }
-    await fs.writeFile(QUESTIONS_DATA_FILE, JSON.stringify(allQuestions, null, 2));
-}
-
-async function generateWebpage(currentDay) {
+async function generateWebpage() {
     const days = (await fs.readdir(__dirname)).filter(dir => dir.startsWith('Day-')).sort();
+    const allQuestions = [];
+    for (const day of days) {
+        const filePath = path.join(__dirname, day, 'interview.md');
+        if (await fs.access(filePath).then(() => true).catch(() => false)) {
+            const questions = await parseMarkdown(filePath);
+            if (questions.length > 0) {
+                allQuestions.push({ day, questions });
+            }
+        }
+    }
+
     const htmlContent = `
 <!DOCTYPE html>
 <html lang="en">
@@ -140,45 +135,43 @@ async function generateWebpage(currentDay) {
         <div id="questions" class="space-y-4"></div>
     </div>
     <script>
-        async function loadDay(day) {
-            try {
-                const response = await fetch('/questions_data.json');
-                if (!response.ok) throw new Error('Failed to fetch questions data');
-                const questionsData = await response.json();
-                const questionsDiv = document.getElementById('questions');
-                const dayData = questionsData.find(d => d.day === day);
-                if (!dayData) {
-                    questionsDiv.innerHTML = '<p class="text-red-600">No data available for this day.</p>';
-                    return;
-                }
-                questionsDiv.innerHTML = \`<h2 class="text-2xl font-semibold mb-4 text-gray-700">\${day}</h2>\`;
-                if (dayData.questions.length === 0) {
-                    questionsDiv.innerHTML += '<p class="text-gray-600">No questions found for this day.</p>';
-                    return;
-                }
-                dayData.questions.forEach((q, index) => {
-                    const questionHtml = \`
-                        <div class="bg-white p-6 rounded-lg shadow-md mb-4">
-                            <h3 class="text-xl font-medium mb-3 text-gray-800">Question \${index + 1}: \${q.mainQuestion}</h3>
-                            <p class="mb-3 text-gray-600"><strong>Answer:</strong> \${q.answer}</p>
-                            <button onclick="toggleDetails(this)" class="text-blue-600 hover:underline mb-2">Show Follow-up Details</button>
-                            <div class="details hidden">
-                                <p class="mb-2 text-gray-600"><strong>Follow-up Questions:</strong></p>
-                                <ul class="list-disc pl-5 mb-3 text-gray-600">\${q.followUps.length ? q.followUps.map(fq => \`<li>\${fq}</li>\`).join('') : '<li>No follow-up questions available.</li>'}</ul>
-                                <p class="mb-2 text-gray-600"><strong>Follow-up Answers:</strong></p>
-                                <ul class="list-disc pl-5 mb-3 text-gray-600">\${q.followUpAnswers.length ? q.followUpAnswers.map(fa => \`<li>\${fa}</li>\`).join('') : '<li>No follow-up answers available.</li>'}</ul>
-                                \${q.codeExamples.length ? \`
-                                    <p class="mb-2 text-gray-600"><strong>Code Example(s):</strong></p>
-                                    <pre class="bg-gray-800 text-white p-4 rounded-lg overflow-x-auto text-sm">\${q.codeExamples.map(ex => ex.replace(/\\n/g, '<br>')).join('<br><br>')}</pre>
-                                \` : ''}
-                            </div>
-                        </div>
-                    \`;
-                    questionsDiv.innerHTML += questionHtml;
-                });
-            } catch (error) {
-                document.getElementById('questions').innerHTML = '<p class="text-red-600">Error loading data: ' + error.message + '</p>';
+        const questionsData = ${JSON.stringify(allQuestions, (key, value) => {
+            if (typeof value === 'string') return sanitizeHTML(value);
+            return value;
+        })};
+
+        function loadDay(day) {
+            const questionsDiv = document.getElementById('questions');
+            const dayData = questionsData.find(d => d.day === day);
+            if (!dayData) {
+                questionsDiv.innerHTML = '<p class="text-red-600">No data available for this day.</p>';
+                return;
             }
+            questionsDiv.innerHTML = \`<h2 class="text-2xl font-semibold mb-4 text-gray-700">\${day}</h2>\`;
+            if (dayData.questions.length === 0) {
+                questionsDiv.innerHTML += '<p class="text-gray-600">No questions found for this day.</p>';
+                return;
+            }
+            dayData.questions.forEach((q, index) => {
+                const questionHtml = \`
+                    <div class="bg-white p-6 rounded-lg shadow-md mb-4">
+                        <h3 class="text-xl font-medium mb-3 text-gray-800">Question \${index + 1}: \${q.mainQuestion}</h3>
+                        <p class="mb-3 text-gray-600"><strong>Answer:</strong> \${q.answer}</p>
+                        <button onclick="toggleDetails(this)" class="text-blue-600 hover:underline mb-2">Show Follow-up Details</button>
+                        <div class="details hidden">
+                            <p class="mb-2 text-gray-600"><strong>Follow-up Questions:</strong></p>
+                            <ul class="list-disc pl-5 mb-3 text-gray-600">\${q.followUps.length ? q.followUps.map(fq => \`<li>\${fq}</li>\`).join('') : '<li>No follow-up questions available.</li>'}</ul>
+                            <p class="mb-2 text-gray-600"><strong>Follow-up Answers:</strong></p>
+                            <ul class="list-disc pl-5 mb-3 text-gray-600">\${q.followUpAnswers.length ? q.followUpAnswers.map(fa => \`<li>\${fa}</li>\`).join('') : '<li>No follow-up answers available.</li>'}</ul>
+                            \${q.codeExamples.length ? \`
+                                <p class="mb-2 text-gray-600"><strong>Code Example(s):</strong></p>
+                                <pre class="bg-gray-800 text-white p-4 rounded-lg overflow-x-auto text-sm">\${q.codeExamples.map(ex => ex.replace(/\\n/g, '<br>')).join('<br><br>')}</pre>
+                            \` : ''}
+                        </div>
+                    </div>
+                \`;
+                questionsDiv.innerHTML += questionHtml;
+            });
         }
 
         function toggleDetails(button) {
@@ -187,8 +180,12 @@ async function generateWebpage(currentDay) {
             button.textContent = details.classList.contains('hidden') ? 'Show Follow-up Details' : 'Hide Follow-up Details';
         }
 
-        // Load the current day by default
-        window.onload = () => loadDay('Day-${String(currentDay).padStart(2, '0')}');
+        // Load the first day by default
+        if (questionsData.length > 0) {
+            loadDay(questionsData[0].day);
+        } else {
+            document.getElementById('questions').innerHTML = '<p class="text-red-600">No data available. Please generate interview questions first.</p>';
+        }
     </script>
 </body>
 </html>
@@ -217,16 +214,11 @@ async function main() {
         await fs.writeFile(path.join(dayDir, 'interview.md'), interviewContent);
         console.log(`Interview file created at ${dayDir}/interview.md`);
 
-        const questions = await parseMarkdown(path.join(dayDir, 'interview.md'), day);
         await saveHistory(history, interviewContent);
         console.log("Updated question history.");
 
-        console.log("Saving questions data...");
-        await saveQuestionsData(dayDir, questions);
-        console.log(`Questions data saved to ${QUESTIONS_DATA_FILE}`);
-
         console.log("Generating webpage...");
-        await generateWebpage(day);
+        await generateWebpage();
         console.log("Webpage generated at public/index.html");
 
         console.log("Pushing to GitHub...");
@@ -236,7 +228,6 @@ async function main() {
         console.log(`Successfully pushed Day ${day} to GitHub!`);
 
         app.use(express.static(path.join(__dirname, 'public')));
-        app.get('/questions_data.json', (req, res) => res.sendFile(QUESTIONS_DATA_FILE));
         app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
     } catch (error) {
         console.error('An error occurred:', error.message);
