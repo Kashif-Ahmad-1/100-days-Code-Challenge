@@ -7,5 +7,14 @@
   "What are Arrow Functions in JavaScript? List at least three key differences between arrow functions and regular function declarations/expressions.",
   "Explain the concept of the `this` keyword in JavaScript. How is its value determined?",
   "Briefly explain the concept of the Event Loop in Node.js. Why is it fundamental to Node.js's non-blocking I/O model?",
-  "How do you handle errors in synchronous and asynchronous JavaScript code? Explain the use of `try...catch` and discuss its limitations with asynchronous operations."
+  "How do you handle errors in synchronous and asynchronous JavaScript code? Explain the use of `try...catch` and discuss its limitations with asynchronous operations.",
+  "Explain what \"truthy\" and \"falsy\" values are in JavaScript. List all the explicitly \"falsy\" values in JavaScript.",
+  "Describe what implicit type coercion is in JavaScript. Provide an example where it might lead to unexpected results.",
+  "Explain the purpose of a `for...of` loop in JavaScript and when you would prefer to use it over a traditional `for` loop or `for...in` loop.",
+  "What is an Immediately Invoked Function Expression (IIFE) in JavaScript, and what are its primary uses?",
+  "Explain the purpose and return value of the `Array.prototype.map()` method. How does it differ from `Array.prototype.forEach()`?",
+  "How do you add, modify, and delete properties from a JavaScript object? Provide examples for each operation.",
+  "What is a callback function in JavaScript? Provide a simple example demonstrating its use with `setTimeout`.",
+  "Explain the concept of the prototype chain in JavaScript. How does JavaScript achieve inheritance through this mechanism?",
+  "What is a closure in JavaScript? Provide an example demonstrating how a closure can retain access to an outer function's scope."
 ]
